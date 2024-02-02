@@ -1,14 +1,18 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Destination;
 use App\Models\Image;
 use App\Models\Recit;
-    use Illuminate\Http\Request;
+use Illuminate\Http\Request;
+use DB;
 
-    class recitcontroller extends Controller
+class recitcontroller extends Controller
+{
+    public function create()
     {
-    public function create(){
+
         return view('ajouter');
     }
     public function stati()
@@ -16,60 +20,62 @@ use App\Models\Recit;
         $totalRecits = Recit::count();
         $totalDestinations = Recit::distinct('destination')->count();
         $totalImages = Recit::distinct('image')->count();
-    
-       
+
+
         return view('index', compact('Recit', 'Destination', 'Image'));
     }
-    public function store (Request $request)
+    public function store(Request $request)
     {
         $data = $request->validate([
             'title' => 'required',
             'content' => 'required',
             'destinationId' => 'required|numeric',
             'url' => 'required|file',
-            ]);
-            
-    
-            if ($request->hasFile('url')) {
-                $file = $request->file('url');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/uploads', $filename);
-                
-            
-                $newRecit = Recit::create([
-                    'title' => $data['title'],
-                    'content' => $data['content'],
-                    'destinationId' => $data['destinationId'],
-                ]);
-                
-            
-                $newImage = $newRecit->image()->create([
-                    'url' => $filename,
-                ]);
+        ]);
 
+
+        if ($request->hasFile('url')) {
+            $images = [];
+            foreach ($request->file('images') as $img)
+            $file = $request->file('url');
+            
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('public/uploads', $filename);
+
+
+            $newRecit = Recit::create([
+                'title' => $data['title'],
+                'content' => $data['content'],
+                'destinationId' => $data['destinationId'],
+            ]);
+
+            if ($request->hasFile('images')) {
+                $images = [];
+                foreach ($request->file('images') as $img) {
+                    $images[] = ['recit_id' => $recit->id, 'Image' => $img->store('images', 'public')];
+                }
+            $newImage = $newRecit->image()->create([
+                'url' => $filename,
+            ]);
+          
             dd('Data saved successfully!');
         } else {
             dd('No file uploaded!');
         }
     }
-    // public function index(Request $request)
-    // {
-    //     $order = $request->input('order', 'asc');
 
-    //     $recits = Recit::orderBy('created_at', $order)->get();
-      
 
-    //     return view('welcome', compact('recits'));
-    // }
-   
     public function filterPosts(Request $request)
     {
-       
+
         $order = $request->input('order');
 
-        $query = Recit::query();
 
-       
+        $query = Recit::query();
+        $destinations = DB::table('destination')->get();
+        $img = DB::table('images')->get();
+        $recit = DB::table('recits')->orderBy('created_at')->get();
+
 
         if ($order === 'latest') {
             $query->orderBy('id', 'desc');
@@ -77,9 +83,35 @@ use App\Models\Recit;
             $query->orderBy('id', 'asc');
         }
 
+
         $posts = $query->get();
+        return view('welcome', [
+            'recits' => $posts,
+            'destinations' => $destinations,
+            'img' => $img,
+            'recit' => $recit,
+            'order' => $order,
 
-        return view('welcome', ['recits' => $posts])->render();
+        ])->render();
     }
+    public function filterbydest(Request $request)
+    {
+        $destinationId = $request->id;
+        $query = Recit::query();
+        $destinations = DB::table('destination')->get();
+        $img = DB::table('images')->get();
+        $recit = DB::table('recits')->get();
 
+        if ($destinationId) {
+            $query->where('destinationId', $destinationId);
+        }
+
+        $posts = $query->get();
+        return view('welcome', [
+            'recits' => $posts,
+            'destinations' => $destinations,
+            'img' => $img,
+            'recit' => $recit,
+        ]);
     }
+}

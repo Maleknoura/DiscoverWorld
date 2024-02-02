@@ -98,15 +98,20 @@
         </div>
   
         <div  :class="open ? 'block': 'hidden'" class="w-full flex-grow sm:flex sm:items-center sm:w-auto">
-            
+        <form method="POST" action="{{ route('filterPosts') }}">
+        @csrf
+        <div class="flex">
       <button  type="submit" name="order" value="oldest"><i class="fas fa-sort-amount-down ml-4"></i></button>  
-  <button  type="submit" name="order" value="latest"> <i   class="fas fa-sort-amount-up ml-4"></i></button> 
+  <button  type="submit" name="order" value="latest"> <i   class="fas fa-sort-amount-up ml-4"></i></button>
+  </div> 
+  </form>
             <div class="w-full container mx-auto flex flex-col sm:flex-row items-center justify-center text-sm font-bold uppercase mt-0 px-6 py-2">
             @foreach($destinations as $destination)
-                <a href="#" class="hover:bg-gray-400 rounded py-2 px-4 mx-2">{{$destination->name}}</a>
+            <a href="{{ route('filter.destination', $destination->id) }}" class="hover:bg-gray-400 rounded py-2 px-4 mx-2">{{$destination->name}}</a>
                 @endforeach 
             </div>
         </div>
+    
     </nav>
     <a href="{{ route('create') }}" class="bg-gray-200 text-white mt-5 ml-5 py-2 px-4 rounded">+ New Recit</a>
 
@@ -115,7 +120,7 @@
         <!-- Posts Section -->
         <section class="w-full md:w-2/3 flex flex-col items-center px-3">
 
-        @foreach($recit as $r)
+        @foreach($recits as $r)
     <article class="flex flex-col shadow my-4">
         <!-- Article Image -->
         @foreach($img as $i)

@@ -10,6 +10,7 @@ class Destination extends Model
     use HasFactory;
   
     protected $fillable = ['name'];
+    protected $table = "destination";
 
     public function recits()
     {

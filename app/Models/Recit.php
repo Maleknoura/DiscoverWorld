@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Recit extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['title', 'content', 'destinationId'];
     public static function getTotalCount()
     {
